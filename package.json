@@ -1,0 +1,16 @@
+{
+  "name": "timms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "timm.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.5.4",
+    "bluebird": "^2.9.34",
+    "ramda": "^0.16.0"
+  }
+}
