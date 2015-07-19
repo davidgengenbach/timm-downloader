@@ -13,11 +13,9 @@ var getSubjectsFromHTML = R.compose(
             ['Mathematik, ', '']
         ];
 
-        replacements.forEach(function(replacement) {
-            text = text.replace(replacement[0], replacement[1]);
-        });
-
-        return text;
+        return R.reduce(function(acc, val) {
+            return acc.replace(val[0], val[1]);
+        }, text, replacements);
     },
     function($) {
         return $('#video-metadata tr td')
