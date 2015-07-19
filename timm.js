@@ -22,4 +22,5 @@ if(['download', 'crawl'].indexOf(command) < 0) {
     process.exit(1);
 }
 
+// TODO: make that sh*t more readable
 require('./commands/' + command)(configFile.name, helper.prepareLinks(configFile.links.split(' '), argv.start, argv.end));
