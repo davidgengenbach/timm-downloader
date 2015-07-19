@@ -1,22 +1,24 @@
 // LIBRARIES
 var axios = require('axios'),
     Bluebird = require('bluebird'),
-    R = require('ramda');
+    R = require('ramda'),
+    path = require('path');
 
 var helper = require('./helper.js');
 
 // TODO: has to be dynamic
-var links = require('./configs/analysis_1.js');
+var downloadConfig = require('./configs/analysis_1.js');
+
+var downloadFolder = path.join(helper.config.DOWNLOAD_FOLDER, downloadConfig.collectionName);
+
+helper.createFolder(downloadFolder);
 
 Bluebird
-    .all(R.map(axios.get.bind(axios), links))
+    .all(R.map(axios.get.bind(axios), downloadConfig.links))
     .then(
         R.map(
             R.compose(
-                // Create a Curl command out of this
-                //helper.getCurlCommand,
-                // Take only the URL
-                //R.prop('Url'),
+                R.curry(helper.downloadVideo)(downloadFolder),
                 // The last item in the TOK is the one with the highest video quality
                 R.last,
                 // Get (TOK) data for the video
@@ -26,5 +28,6 @@ Bluebird
             )
         )
     )
-    .then(console.log)
+    .all()
+    .tap(console.log)
     .catch(console.error);

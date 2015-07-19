@@ -1,6 +1,11 @@
 var R = require('ramda'),
     fs = require('fs'),
-    rp = require('request-promise');
+    rp = require('request-promise'),
+    path = require('path');
+
+var CONFIG = {
+    DOWNLOAD_FOLDER: './downloads'
+};
 
 function decodeb64(s) {
     var e = {},
@@ -25,19 +30,33 @@ function decodeb64(s) {
 }
 
 module.exports = {
-    downloadVideo: function(url, filename) {
-        return rp(url, function(result) {
-            console.log('--> finished downloading:', filename);
-        })
-        .pipe(
-            fs.createWriteStream(filename)
-        );
+    config: CONFIG,
+    createFolder: function(folderName) {
+        try {
+            fs.mkdirSync(folderName);
+        } catch (e) {
+            if (e.code != 'EEXIST') throw e;
+        }
+    },
+    downloadVideo: function(downloadFolder, videoData) {
+        var filename = path.join(downloadFolder, videoData.FileName);
+
+        if (fs.existsSync(filename)) {
+            console.log('--> already downloaded:', filename);
+            return;
+        }
+
+        var download = rp(videoData.Url, function(result) {
+            console.log('--> finished downloading:', videoData.FileName);
+        });
+
+        download.pipe(fs.createWriteStream(filename));
+        return download;
     },
     getCurlCommand: function(url) {
         return 'curl -O "%URL%";'.replace('%URL%', url);
     },
     getTok: R.compose(JSON.parse, decodeb64, function(html) {
         return ((/var mytok =  '(.*)'/g).exec(html))[1];
-    }),
-    decodeb64: decodeb64
+    })
 };
