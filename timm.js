@@ -2,19 +2,28 @@
 var axios = require('axios'),
     Bluebird = require('bluebird'),
     R = require('ramda'),
-    path = require('path');
+    path = require('path'),
+    yargs = require('yargs');
+
+Bluebird.longStackTraces();
+
 
 var helper = require('./helper.js');
 
-// TODO: has to be dynamic
-var downloadConfig = require('./configs/analysis_1.js');
+// Command line
+var argv = yargs
+    .usage('Usage: $0 --start [num] --end [num] --config [string]')
+    .demand(['start', 'end', 'config'])
+    .argv;
 
-var downloadFolder = path.join(helper.config.DOWNLOAD_FOLDER, downloadConfig.collectionName);
+var configFile = require(path.resolve(argv.config));
+
+var downloadFolder = path.join(helper.config.DOWNLOAD_FOLDER, configFile.name);
 
 helper.createFolder(downloadFolder);
 
 Bluebird
-    .all(R.map(axios.get.bind(axios), downloadConfig.links))
+    .all(R.map(axios.get.bind(axios), helper.prepareLinks(configFile.links.split(' '), argv.start, argv.end)))
     .then(
         R.map(
             R.compose(
@@ -30,4 +39,6 @@ Bluebird
     )
     .all()
     .tap(console.log)
-    .catch(console.error);
+    .catch(function(err) {
+        console.error(err, err.stack);
+    });

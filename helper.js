@@ -32,6 +32,13 @@ function decodeb64(s) {
 
 module.exports = {
     config: CONFIG,
+    prepareLinks: function(links, start, end) {
+        if(end <= start) {
+            return links;
+        } else {
+            return links.slice(start, end);
+        }
+    },
     createFolder: function(folderName) {
         try {
             fs.mkdirSync(folderName);
@@ -42,6 +49,7 @@ module.exports = {
     downloadVideo: function(downloadFolder, videoData) {
         var filename = path.join(downloadFolder, videoData.FileName);
 
+        // TODO: this should be done somewhere else?
         if (fs.existsSync(filename)) {
             console.log('--> already downloaded:', filename);
             return;
