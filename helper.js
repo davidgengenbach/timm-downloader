@@ -1,6 +1,7 @@
 var R = require('ramda'),
     fs = require('fs'),
     rp = require('request-promise'),
+    rprogress = require('request-progress'),
     path = require('path');
 
 var CONFIG = {
@@ -46,11 +47,20 @@ module.exports = {
             return;
         }
 
-        var download = rp(videoData.Url, function(result) {
-            console.log('--> finished downloading:', videoData.FileName);
-        });
+        var download = rprogress(rp(videoData.Url));
+        var oldProgressPercent;
 
-        download.pipe(fs.createWriteStream(filename));
+        download
+            .on('progress', function(progress) {
+                if (progress.percent != oldProgressPercent) {
+                    console.log('-->', filename, ':', progress.percent, '%');
+                    oldProgressPercent = progress.percent;
+                }
+            })
+            .pipe(fs.createWriteStream(filename))
+            .on('close', function(err) {
+                console.log('--> finished downloading:', videoData.FileName);
+            });
         return download;
     },
     getCurlCommand: function(url) {

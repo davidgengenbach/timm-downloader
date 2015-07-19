@@ -12,6 +12,7 @@
     "axios": "^0.5.4",
     "bluebird": "^2.9.34",
     "ramda": "^0.16.0",
+    "request-progress": "^0.3.1",
     "request-promise": "^0.4.2"
   }
 }
