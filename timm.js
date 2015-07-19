@@ -14,9 +14,9 @@ Bluebird
         R.map(
             R.compose(
                 // Create a Curl command out of this
-                helper.getCurlCommand,
+                //helper.getCurlCommand,
                 // Take only the URL
-                R.prop('Url'),
+                //R.prop('Url'),
                 // The last item in the TOK is the one with the highest video quality
                 R.last,
                 // Get (TOK) data for the video

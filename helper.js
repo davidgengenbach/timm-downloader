@@ -1,4 +1,6 @@
-var R = require('ramda');
+var R = require('ramda'),
+    fs = require('fs'),
+    rp = require('request-promise');
 
 function decodeb64(s) {
     var e = {},
@@ -7,7 +9,7 @@ function decodeb64(s) {
         a, r = '',
         w = String.fromCharCode,
         L = s.length;
-    var A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     for (i = 0; i < 64; i++) {
         e[A.charAt(i)] = i;
     }
@@ -23,6 +25,14 @@ function decodeb64(s) {
 }
 
 module.exports = {
+    downloadVideo: function(url, filename) {
+        return rp(url, function(result) {
+            console.log('--> finished downloading:', filename);
+        })
+        .pipe(
+            fs.createWriteStream(filename)
+        );
+    },
     getCurlCommand: function(url) {
         return 'curl -O "%URL%";'.replace('%URL%', url);
     },
