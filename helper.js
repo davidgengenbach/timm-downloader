@@ -1,8 +1,5 @@
 var R = require('ramda'),
-    fs = require('fs'),
-    rp = require('request-promise'),
-    rprogress = require('request-progress'),
-    path = require('path');
+    fs = require('fs');
 
 var CONFIG = {
     DOWNLOAD_FOLDER: './downloads'
@@ -45,31 +42,6 @@ module.exports = {
         } catch (e) {
             if (e.code != 'EEXIST') throw e;
         }
-    },
-    downloadVideo: function(downloadFolder, videoData) {
-        var filename = path.join(downloadFolder, videoData.FileName);
-
-        // TODO: this should be done somewhere else?
-        if (fs.existsSync(filename)) {
-            console.log('--> already downloaded:', filename);
-            return;
-        }
-
-        var download = rprogress(rp(videoData.Url));
-        var oldProgressPercent;
-
-        download
-            .on('progress', function(progress) {
-                if (progress.percent != oldProgressPercent) {
-                    console.log('-->', filename, ':', progress.percent, '%');
-                    oldProgressPercent = progress.percent;
-                }
-            })
-            .pipe(fs.createWriteStream(filename))
-            .on('close', function(err) {
-                console.log('--> finished downloading:', videoData.FileName);
-            });
-        return download;
     },
     getCurlCommand: function(url) {
         return 'curl -O "%URL%";'.replace('%URL%', url);
