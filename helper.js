@@ -29,11 +29,11 @@ function decodeb64(s) {
 
 module.exports = {
     config: CONFIG,
-    prepareLinks: function(links, start, end) {
-        if(end <= start) {
+    prepareLinks: function(links, start, length) {
+        if(length === 0) {
             return links;
         } else {
-            return links.slice(start, end);
+            return links.slice(start, start+length);
         }
     },
     createFolder: function(folderName) {

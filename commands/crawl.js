@@ -5,18 +5,14 @@ var axios = require('axios'),
     cheerio = require('cheerio');
 
 var getSubjectsFromHTML = R.compose(
-    function(text) {
-        var replacements = [
-            [/\r\n/g, ''],
-            [/  /g, ''],
-            ['Vorlesung, ', ''],
-            ['Mathematik, ', '']
-        ];
-
-        return R.reduce(function(acc, val) {
-            return acc.replace(val[0], val[1]);
-        }, text, replacements);
-    },
+    R.reduce(function(acc, val) {
+        return acc.replace(val[0], val[1]);
+    }, R.__, [
+        [/\r\n/g, ''],
+        [/  /g, ''],
+        ['Vorlesung, ', ''],
+        ['Mathematik, ', '']
+    ]),
     function($) {
         return $('#video-metadata tr td')
             .filter(function() {

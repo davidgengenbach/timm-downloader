@@ -4,6 +4,7 @@ var helper = require('../helper.js'),
     rp = require('request-promise'),
     rprogress = require('request-progress'),
     path = require('path'),
+    ProgressBar = require('progress'),
     Bluebird = require('bluebird'),
     axios = require('axios'),
     fs = require('fs');
@@ -17,21 +18,26 @@ function downloadVideo(downloadFolder, videoData) {
         return;
     }
 
-    var download = rprogress(rp(videoData.Url));
-    var oldProgressPercent;
+    var bar = new ProgressBar(filename + ' ->  [:bar] :percent :etas', {
+        complete: '=',
+        incomplete: ' ',
+        width: 20,
+        total: 100
+    });
+    bar.tick();
 
-    download
-        .on('progress', function(progress) {
-            if (progress.percent != oldProgressPercent) {
-                console.log('-->', filename, ':', progress.percent, '%');
-                oldProgressPercent = progress.percent;
-            }
-        })
-        .pipe(fs.createWriteStream(filename))
-        .on('close', function(err) {
-            console.log('--> finished downloading:', videoData.FileName, err);
-        });
-    return download;
+    var invokeOn = R.curry(function(fnName, obj) {
+        return obj[fnName]();
+    });
+
+    return (function(download) {
+        download
+            .on('progress', R.pipe(R.prop('percent'), R.assoc('curr', R.__, bar), invokeOn('render')))
+            .pipe(fs.createWriteStream(filename))
+            .on('close', console.log.bind(console, '--> finished downloading:', videoData.FileName));
+
+        return download;
+    })(rprogress(rp(videoData.Url)));
 }
 
 module.exports = function(collectionName, links) {
@@ -47,6 +53,10 @@ module.exports = function(collectionName, links) {
                     R.curry(downloadVideo)(downloadFolder),
                     // The last item in the TOK is the one with the highest video quality
                     R.last,
+                    R.sort(function(a, b) {
+
+                        return a.Bitrate - b.Bitrate;
+                    }),
                     // Get (TOK) data for the video
                     helper.getTok,
                     // axios returns the HTML in the data property
